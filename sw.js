@@ -1,5 +1,5 @@
 // Naikkan angka versi ini setiap kali file aplikasi diubah, supaya pengguna menerima pembaruan.
-const CACHE = 'nexus-notes-v1';
+const CACHE = 'nexus-notes-v2';
 const ASSETS = ["./", "index.html", "manifest.json", "favicon.svg", "favicon-32.png", "apple-touch-icon.png", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
 
 self.addEventListener('install', (e) => {
