@@ -48,7 +48,7 @@ dialog[open]{animation:pop .2s ease}
 .b:active,.ib:active,.tbb:active,.fab:active{transform:scale(.94)}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
 [data-anim=off] *,[data-anim=off] *:before,[data-anim=off] *:after{transition:none!important;animation:none!important}
-#app{display:grid;grid-template-columns:232px 304px 1fr;height:100%;position:relative;overflow:hidden}
+#app{display:grid;grid-template-columns:232px 304px 1fr;height:var(--vvh,100%);top:var(--vvt,0px);position:relative;overflow:hidden}
 #listp,#sv{touch-action:pan-y}
 html,body{overscroll-behavior:none}
 .pgv{position:absolute;inset:0;overflow:hidden;background:var(--bg);pointer-events:none;z-index:3;will-change:transform}
@@ -78,12 +78,13 @@ html,body{overscroll-behavior:none}
 .un{font-size:18px;line-height:24px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* settings */
 #sv{position:fixed;inset:0;z-index:10;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+#sv{top:var(--vvt,0px);height:var(--vvh,auto)}
 .svh{display:flex;align-items:center;gap:12px;padding:16px 16px 4px}
 #svb{width:48px;height:48px;background:var(--sf)}
 .svh h2{flex:1;font-size:22px;line-height:28px;font-weight:600}
 .b.ic.thb{width:44px;height:44px}
 .thb svg{width:22px;height:22px}
-#psave{position:fixed;top:calc(var(--vh,100vh) - 64px - env(safe-area-inset-bottom,0px));left:0;right:0;margin:0 auto;width:min(528px,calc(100% - 32px));height:48px;border-radius:14px;font-size:16px;z-index:2}
+#psave{position:fixed;top:calc(var(--vvt,0px) + var(--vvh,var(--vh,100vh)) - 64px - env(safe-area-inset-bottom,0px));left:0;right:0;margin:0 auto;width:min(528px,calc(100% - 32px));height:48px;border-radius:14px;font-size:16px;z-index:2}
 .card.pcard{padding:24px 20px 28px;gap:18px;align-items:center}
 .pcard .fl{align-self:stretch}
 .pcard .fl input{background:var(--bg)}
@@ -213,7 +214,8 @@ nav{display:flex;flex-direction:column;gap:2px}
 #act,#mm{position:absolute;right:16px;top:calc(100% - 4px);background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:4px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:5;display:flex;flex-direction:column}
 #st:not(:empty):before{content:"· "}
 .ew{flex:1;overflow-y:auto;padding:24px 32px;width:100%;max-width:776px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
-#title{border:0;background:none;font-size:28px;line-height:34px;font-weight:600;width:100%;padding:0;outline-offset:4px;border-radius:8px}
+#title{display:block;border:0;background:none;font-size:28px;line-height:34px;font-weight:600;width:100%;padding:0;outline-offset:4px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;cursor:text;-webkit-user-select:text;user-select:text}
+#title:empty:before{content:attr(data-ph);color:var(--mu);pointer-events:none}
 #body{flex:1;min-height:240px;outline:0;word-wrap:break-word}
 #body:empty:before{content:attr(data-ph);color:var(--mu)}
 #body ul,#body ol{padding-left:24px}
@@ -308,7 +310,7 @@ dialog p{color:var(--mu);font-size:15px;line-height:22px;margin-bottom:24px}
   </div>
   <div class="ew">
    
-   <input id="title" data-pl="titlePh" data-al="titleAria" maxlength="200" autocomplete="off">
+   <div id="title" contenteditable="true" role="textbox" aria-multiline="false" enterkeyhint="next" data-pl="titlePh" data-al="titleAria"></div>
    <div class="dt"><span id="dd"></span><span id="st" role="status" aria-live="polite"></span></div>
    <div id="body" contenteditable="true" role="textbox" aria-multiline="true" data-al="bodyAria"></div>
   </div>
@@ -415,6 +417,10 @@ const isEmpty=n=>!(n.title||'').trim()&&!(n.text||'').trim();
 S.notes=S.notes.filter(n=>!isEmpty(n));
 let sel=null,q='',dirty=false,timer;
 const A=$('#app'),E=$('#body'),T=$('#title');
+/* Judul memakai contenteditable (bukan input) supaya Chrome tidak menampilkan bar autofill kata sandi, kartu, dan alamat di atas keyboard. Properti value dan readOnly dipertahankan agar kode lain tidak berubah. */
+function setPT(el,on){if(!on){el.contentEditable='false';return}try{el.contentEditable='plaintext-only'}catch(_){el.contentEditable='true'}}
+Object.defineProperty(T,'value',{get(){return T.textContent},set(v){T.textContent=v}});
+Object.defineProperty(T,'readOnly',{get(){return T.contentEditable==='false'},set(v){setPT(T,!v)}});
 const save=()=>{try{localStorage.setItem(K,JSON.stringify({...S,notes:S.notes.filter(n=>!isEmpty(n))}));return true}catch(e){return false}};
 const prune=()=>{S.notes=S.notes.filter(n=>n.id===sel||!isEmpty(n))};
 const uname=()=>(S.profile.username||'').trim()||(S.profile.name||'').trim()||t('user');
@@ -439,7 +445,7 @@ function applyLang(){document.documentElement.lang=S.lang;
  $$('[data-al]').forEach(e=>e.setAttribute('aria-label',t(e.dataset.al)));
  $$('[data-ti]').forEach(e=>e.title=t(e.dataset.ti));
  $$('[data-at]').forEach(e=>{const s=t(e.dataset.at);e.setAttribute('aria-label',s);e.title=s});
- $$('[data-pl]').forEach(e=>e.placeholder=t(e.dataset.pl));
+ $$('[data-pl]').forEach(e=>{const s=t(e.dataset.pl);e.placeholder=s;e.dataset.ph=s});
  E.dataset.ph=t('bodyPh');themeBtn()}
 
 function vis(){const s=q.trim().toLowerCase();
@@ -545,6 +551,11 @@ function sync(){const el=elOf(getSelection().anchorNode);if(!el||!E.contains(el)
 document.addEventListener('selectionchange',sync);
 
 E.addEventListener('input',onEdit);T.addEventListener('input',onEdit);
+const noNL=e=>{e.preventDefault();E.focus()};
+T.addEventListener('keydown',e=>{if(e.key==='Enter')noNL(e)});
+T.addEventListener('beforeinput',e=>{if(e.inputType==='insertParagraph'||e.inputType==='insertLineBreak')noNL(e)});
+T.addEventListener('paste',e=>{e.preventDefault();document.execCommand('insertText',false,(e.clipboardData.getData('text/plain')||'').replace(/\s*[\r\n]+\s*/g,' '))});
+T.addEventListener('input',()=>{if(!T.textContent&&T.firstChild){T.textContent='';return}if(T.textContent.length>200){T.textContent=T.textContent.slice(0,200);const r=document.createRange(),s=getSelection();r.selectNodeContents(T);r.collapse(false);s.removeAllRanges();s.addRange(r)}});
 E.addEventListener('blur',flush);T.addEventListener('blur',flush);
 E.addEventListener('paste',e=>{e.preventDefault();document.execCommand('insertText',false,e.clipboardData.getData('text/plain'))});
 addEventListener('pagehide',flush);document.addEventListener('visibilitychange',()=>{if(document.hidden)flush()});
@@ -711,6 +722,12 @@ document.addEventListener('touchend',fin,{passive:true});document.addEventListen
 document.addEventListener('click',e=>{if(Date.now()<swallowUntil){e.stopPropagation();e.preventDefault()}},true);
 function setVh(){const a=document.activeElement;if(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable))return;document.documentElement.style.setProperty('--vh',innerHeight+'px')}
 setVh();addEventListener('resize',setVh);addEventListener('orientationchange',()=>setTimeout(setVh,300));document.addEventListener('focusout',()=>setTimeout(setVh,400));
+/* Keyboard virtual di PWA Chrome Android hanya mengecilkan visual viewport, bukan layout. Tinggi aplikasi disesuaikan supaya toolbar format tetap terlihat di atas keyboard. */
+function caretIntoView(){const s=getSelection(),w=$('.ew');if(!w||!s.rangeCount||!E.contains(s.anchorNode))return;const r=s.getRangeAt(0).cloneRange();r.collapse(false);const b=r.getClientRects()[0]||(s.anchorNode.nodeType===1?s.anchorNode.getBoundingClientRect():null),wb=w.getBoundingClientRect();if(!b)return;if(b.bottom>wb.bottom-24)w.scrollTop+=b.bottom-wb.bottom+24;else if(b.top<wb.top+8)w.scrollTop-=wb.top+8-b.top}
+function fitKb(){const v=window.visualViewport;if(!v)return;const st=document.documentElement.style;
+ if(v.scale<=1.01&&document.documentElement.clientHeight-v.height>80){st.setProperty('--vvh',v.height+'px');st.setProperty('--vvt',v.offsetTop+'px');requestAnimationFrame(caretIntoView)}
+ else{st.removeProperty('--vvh');st.removeProperty('--vvt')}}
+if(window.visualViewport){visualViewport.addEventListener('resize',fitKb);visualViewport.addEventListener('scroll',fitKb)}
 /* Bersihkan sisa markup lama pada isi catatan (otomatis, aman diulang) */
 (()=>{let ch=false;S.notes.forEach(n=>{if(typeof n.body==='string'&&/<input|class=/.test(n.body)){const t=document.createElement('template');t.innerHTML=n.body;t.content.querySelectorAll('input').forEach(i=>{const p=i.parentElement;i.remove();if(p&&p.tagName==='LI'&&!p.firstChild)p.appendChild(document.createElement('br'))});t.content.querySelectorAll('[class]').forEach(x=>x.removeAttribute('class'));n.body=t.innerHTML;ch=true}});if(ch)save()})();
 theme();applyLang();applyAnim();renderAll();
