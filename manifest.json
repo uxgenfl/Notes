@@ -1,19 +1,21 @@
 {
-  "name": "Notes",
+  "name": "Nexus Notes",
   "short_name": "Notes",
   "description": "Aplikasi catatan sederhana dengan arsip, sampah, dan pemformatan teks.",
   "lang": "id",
-  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0B0C0E",
   "theme_color": "#0B0C0E",
-  "categories": [
-    "productivity",
-    "utilities"
-  ],
   "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "icon-192.png",
       "sizes": "192x192",

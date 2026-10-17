@@ -1,35 +1,11 @@
-// Naikkan angka versi ini setiap kali file aplikasi diubah, supaya pengguna menerima pembaruan.
-const CACHE = 'nexus-notes-v5';
-const ASSETS = ["./", "index.html", "manifest.json", "favicon.svg", "favicon-32.png", "apple-touch-icon.png", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
-
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
-});
-
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (e) => {
-  const req = e.request;
-  if (req.method !== 'GET') return;
-  if (new URL(req.url).origin !== location.origin) return;
-  if (req.mode === 'navigate') {
-    e.respondWith(
-      fetch(req)
-        .then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put('index.html', copy)); return res; })
-        .catch(() => caches.match('index.html'))
-    );
-    return;
-  }
-  e.respondWith(
-    caches.match(req).then((hit) => hit || fetch(req).then((res) => {
-      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
-      return res;
-    }))
-  );
+const CACHE='nexus-notes-v1';
+const ASSETS=['./','index.html','manifest.json','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','icon.svg','favicon-32.png'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  e.respondWith(fetch(e.request).then(r=>{
+    if(r&&r.ok&&new URL(e.request.url).origin===location.origin){const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c))}
+    return r;
+  }).catch(()=>caches.match(e.request).then(r=>r||caches.match('index.html'))));
 });
