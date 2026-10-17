@@ -20,6 +20,6 @@ Bisa dipasang di layar utama (PWA) dan tetap terbuka saat offline.
 
 ## Catatan
 
-- Setelah mengganti `index.html`, naikkan versi cache di `sw.js` (`nexus-notes-v1` menjadi `v2`) agar pemakai mendapat versi terbaru.
+- Setelah mengganti `index.html`, naikkan versi cache di `sw.js` (`nexus-notes-v2` menjadi `v3`) agar pemakai mendapat versi terbaru.
 - Data tersimpan per browser dan per alamat situs. Gunakan **Pengaturan > Kontrol data > Ekspor** untuk cadangan.
 - Font Geist: lisensi SIL Open Font License 1.1.
